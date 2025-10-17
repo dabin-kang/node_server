@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="index.css">
+</head>
+
+<body>
+    <h1>index 파일임</h1>
+    <p id="response"></p>
+
+    <script>
+        const data = {
+            name: 'kim',
+            height: 32
+        };
+
+        const p = document.getElementById('response');
+
+        fetch('http://localhost:3000/hello', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data),
+        }).then(res => res.json()) // JSON 변환
+            .then(result => {
+                p.innerText = result.message;
+            });
+    </script>
+</body>
+
+</html>
