@@ -1,6 +1,7 @@
 import express from 'express';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import { pool } from './mysql.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,22 +24,55 @@ app.get('/bbb', (req, res) => {
     res.send(`${a} + ${b} = ${Number(a) + Number(b)}`);
 });
 
-app.post('/hello', (req, res) => {
+app.post('/hello', async (req, res) => {
     try {
         const { name, age } = req.body;
 
-        if (!age) {
-            throw new Error('나이가 없습니다.');
+        if (!name || !age) {
+            throw new Error('이름이나 나이가 없습니다.');
         }
 
         res.json({
             message: `이름: ${name}, 나이: ${age}`
         })
     } catch (err) {
+        console.log('쿼리 삽입 에러: ', err.message);
+
         res.json({ message: err.message });
     }
 });
 
-app.listen(3000, () => {
-    console.log('서버 시작: http://localhost:3000');
+/**
+ * CRUD
+ * get - SELECT
+ * post - INSERT
+ * put - UPDATE
+ * delete - DELETE
+ */
+
+app.get('/person', async (req, res) => {
+    const [row] = await pool.query(`select name, age from users`);
+
+    const result = row[0];
+
+    console.log(result.name, result.age);
+
+    res.json({
+        name: result.name,
+        age: result.age
+    });
 });
+
+(async () => {
+    try {
+        const connection = await pool.getConnection();
+        console.log('연결 성공');
+        connection.release();
+
+        app.listen(3000, () => {
+            console.log('서버 시작: http://localhost:3000');
+        });
+    } catch (err) {
+        console.error('서버 스타트 에러: ', err);
+    }
+})();
